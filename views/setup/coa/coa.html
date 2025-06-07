@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Setup Chart of Accounts</title>
+    <link rel="stylesheet" href="../../../assets/css/dashboard/dashboard.css">
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="../../../assets/css/setup/coa/coa.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+</head>
+
+<body>
+    <div id="navbar-container"></div>
+    <div id="coa-page">
+        <h1>Setup Chart of Accounts</h1>
+
+        <div class="form-container">
+            <h2>Add Account Head</h2>
+            <form method="POST" action="index.php">
+                <label for="name">Account Head Name:</label>
+                <input type="text" id="name" name="name" required>
+                <button type="submit" name="add_account_head">Add Account Head</button>
+            </form>
+        </div>
+
+        <div class="form-container">
+            <h2>Add Sub-Account</h2>
+            <form method="POST" action="index.php">
+                <div class="form-group">
+                    <label for="account_head_id">Select Account Head:</label>
+                    <select id="account_head_id" name="account_head_id" required>
+                        <!-- Account head options will be populated via JavaScript -->
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="name">Sub-Account Name:</label>
+                    <input type="text" id="name" name="name" required>
+                </div>
+                <button type="submit" name="add_sub_account">Add Sub-Account</button>
+            </form>
+        </div>
+
+        <div class="form-container">
+            <h2>Add Account</h2>
+            <form method="POST" action="index.php">
+                <div class="form-group">
+                    <label for="sub_account_id">Select Sub-Account:</label>
+                    <select id="sub_account_id" name="sub_account_id" required>
+                        <!-- Sub account options will be populated via JavaScript -->
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="name">Account Name:</label>
+                    <input type="text" id="name" name="name" required>
+                </div>
+                <button type="submit" name="add_account">Add Account</button>
+            </form>
+        </div>
+
+        <div class="list-container">
+            <div class="list-header">
+                <h2 class="list-title">Existing Account Heads</h2>
+                <div class="search-container">
+                    <div class="search-input-group">
+                        <i class="fas fa-search search-icon"></i>
+                        <input type="text" id="searchHeads" class="search-input" placeholder="Search account heads...">
+                    </div>
+                    <div class="search-buttons">
+                        <button type="button" class="btn-search" onclick="performSearch('Heads')">
+                            <i class="fas fa-search"></i> Search
+                        </button>
+                        <button type="button" class="btn-cancel-search" onclick="cancelSearch('Heads')">
+                            <i class="fas fa-times"></i> Cancel
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <ul id="accountHeadsList">
+                <!-- Account heads will be populated via JavaScript -->
+            </ul>
+        </div>
+
+        <div class="list-container">
+            <div class="list-header">
+                <h2 class="list-title">Existing Sub-Accounts</h2>
+                <div class="search-container">
+                    <div class="search-input-group">
+                        <i class="fas fa-search search-icon"></i>
+                        <input type="text" id="searchSubs" class="search-input" placeholder="Search sub-accounts...">
+                    </div>
+                    <div class="search-buttons">
+                        <button type="button" class="btn-search" onclick="performSearch('Subs')">
+                            <i class="fas fa-search"></i> Search
+                        </button>
+                        <button type="button" class="btn-cancel-search" onclick="cancelSearch('Subs')">
+                            <i class="fas fa-times"></i> Cancel
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <ul id="subAccountsList">
+                <!-- Sub accounts will be populated via JavaScript -->
+            </ul>
+        </div>
+
+        <div class="list-container">
+            <div class="list-header">
+                <h2 class="list-title">Existing Accounts</h2>
+                <div class="search-container">
+                    <div class="search-input-group">
+                        <i class="fas fa-search search-icon"></i>
+                        <input type="text" id="searchAccounts" class="search-input" placeholder="Search accounts...">
+                    </div>
+                    <div class="search-buttons">
+                        <button type="button" class="btn-search" onclick="performSearch('Accounts')">
+                            <i class="fas fa-search"></i> Search
+                        </button>
+                        <button type="button" class="btn-cancel-search" onclick="cancelSearch('Accounts')">
+                            <i class="fas fa-times"></i> Cancel
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <ul id="accountsList">
+                <!-- Accounts will be populated via JavaScript -->
+            </ul>
+        </div>
+
+        <!-- Edit Modal -->
+        <div id="editModal" class="modal">
+            <div class="modal-content">
+                <span class="modal-close" onclick="closeEditModal()">&times;</span>
+                <h2>Edit</h2>
+                <form method="POST" action="index.php">
+                    <input type="hidden" id="edit_id" name="edit_id">
+                    <input type="hidden" id="edit_type" name="edit_type">
+                    <label for="edit_name">Name:</label>
+                    <input type="text" id="edit_name" name="edit_name" required>
+                    <button type="submit">Save</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Delete Confirmation Modal -->
+        <div id="deleteConfirmationModal" class="modal">
+            <div class="modal-content">
+                <span class="modal-close" onclick="closeDeleteModal()">&times;</span>
+                <h2>Delete Confirmation</h2>
+                <p id="deleteConfirmationText"></p>
+                <div class="modal-buttons">
+                    <button id="cancelDeleteBtn" class="btn-cancel" onclick="closeDeleteModal()">Cancel</button>
+                    <button id="confirmDeleteBtn" class="btn-confirm-delete" onclick="confirmDelete()">Delete</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="../../../assets/js/common/navigation.js"></script>
+    <script src="../../../assets/js/components/navbar.js"></script>
+    <script src="../../../assets/js/setup/coa/coa.js"></script>
+
+</body>
+
+</html>

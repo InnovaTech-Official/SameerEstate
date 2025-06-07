@@ -1,0 +1,939 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Customer Entry Form</title>
+
+    <!-- Add cache control metadata -->
+    <meta http-equiv="Cache-Control" content="max-age=86400">
+    <meta http-equiv="Expires" content="86400">
+    
+    <!-- CSS Libraries -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.32/dist/sweetalert2.min.css">
+    
+    <!-- JavaScript Libraries -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.32/dist/sweetalert2.all.min.js"></script>
+    
+    <!-- Service Worker Registration -->
+    <script>
+        // Register the service worker
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', function() {
+                navigator.serviceWorker.register('/realestate/assets/js/sw.js')
+                    .then(function(registration) {
+                        console.log('ServiceWorker registration successful with scope: ', registration.scope);
+                    })
+                    .catch(function(error) {
+                        console.log('ServiceWorker registration failed: ', error);
+                    });
+            });
+        }
+        
+        // Check for app updates
+        let refreshing = false;
+        
+        // Listen for controlling service worker changing
+        navigator.serviceWorker.addEventListener('controllerchange', function() {
+            if (refreshing) return;
+            refreshing = true;
+            window.location.reload();
+        });
+        
+        // Detect online/offline status
+        window.addEventListener('online', updateOnlineStatus);
+        window.addEventListener('offline', updateOnlineStatus);
+        
+        function updateOnlineStatus() {
+            const statusElement = document.getElementById('connection-status');
+            if (!statusElement) return;
+            
+            if (navigator.onLine) {
+                statusElement.textContent = 'Online';
+                statusElement.className = 'badge badge-success';
+                
+                // Check for cached form data to sync
+                if (localStorage.getItem('pendingFormData')) {
+                    Swal.fire({
+                        title: 'Sync Data',
+                        text: 'You have unsaved data that was created while offline. Would you like to submit it now?',
+                        icon: 'question',
+                        showCancelButton: true,
+                        confirmButtonText: 'Yes, submit now',
+                        cancelButtonText: 'No, discard it'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            // Code to process the offline data would go here
+                            localStorage.removeItem('pendingFormData');
+                            Swal.fire('Success', 'Your data has been synchronized', 'success');
+                        } else {
+                            localStorage.removeItem('pendingFormData');
+                        }
+                    });
+                }
+            } else {
+                statusElement.textContent = 'Offline';
+                statusElement.className = 'badge badge-danger';
+                
+                Swal.fire({
+                    title: 'You are offline',
+                    text: 'Form data will be saved locally until you reconnect',
+                    icon: 'warning',
+                    toast: true,
+                    position: 'top-end',
+                    showConfirmButton: false,
+                    timer: 3000,
+                    timerProgressBar: true
+                });
+            }
+        }
+    </script>
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="../../../assets/css/dashboard/dashboard.css">
+    <link rel="stylesheet" href="../../../assets/css/entry/customer/customer.css">
+    
+    <style>
+        /* Add offline application styling */
+        .offline-alert {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: #f8d7da;
+            color: #721c24;
+            padding: 10px 15px;
+            border-radius: 4px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            z-index: 9999;
+            display: none;
+        }
+        
+        .connection-status-container {
+            display: inline-flex;
+            align-items: center;
+            margin-left: 15px;
+        }
+        
+        .connection-status-label {
+            margin-right: 5px;
+            font-size: 12px;
+            color: #6c757d;
+        }
+        
+        #connection-status {
+            font-size: 12px;
+            padding: 3px 6px;
+        }
+        
+        /* Add a loader overlay for when assets are being loaded from cache */
+        .loader-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255,255,255,0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            flex-direction: column;
+        }
+        
+        .loader {
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid #3498db;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin-bottom: 15px;
+        }
+        
+        .loader-message {
+            font-size: 16px;
+            color: #333;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Loader overlay -->
+    <div class="loader-overlay" id="loader-overlay">
+        <div class="loader"></div>
+        <div class="loader-message">Loading application from cache...</div>
+    </div>
+    
+    <!-- Offline alert -->
+    <div class="offline-alert" id="offline-alert">
+        You are currently offline. Form data will be saved locally.
+    </div>
+
+    <div id="navbar-container"></div>
+
+    <div class="container mt-4">
+        <div class="header-container">
+            <h5>Customer Entry Form</h5>
+            <div class="button-group">
+                <a href="../../../controllers/reports/customerList/index.php" class="btn-dashboard">
+                    <i class="fas fa-list"></i>
+                    Customer List
+                </a>
+                <div class="date-field">
+                    <label for="entry_date">Date:</label>
+                    <input type="date" id="entry_date" name="entry_date">
+                    <div class="connection-status-container">
+                        <span class="connection-status-label">Status:</span>
+                        <span id="connection-status" class="badge badge-success">Online</span>
+                    </div>
+                    <script>
+                        // Set current date
+                        document.getElementById('entry_date').value = new Date().toISOString().split('T')[0];
+                    </script>
+                </div>
+            </div>
+        </div>
+
+        <form id="customerForm" class="customer-form" method="POST" enctype="multipart/form-data">
+            <ul class="nav nav-tabs" id="customerTabs" role="tablist">
+                <li class="nav-item">
+                    <a class="nav-link active" id="personal-tab" data-toggle="tab" href="#personal" role="tab"
+                        aria-controls="personal" aria-selected="true">
+                        Personal Information
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" id="contact-tab" data-toggle="tab" href="#contact" role="tab"
+                        aria-controls="contact" aria-selected="false">
+                        Contact/Reference
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" id="work-tab" data-toggle="tab" href="#work" role="tab" aria-controls="work"
+                        aria-selected="false">
+                        Work Information
+                    </a>
+                </li>
+            </ul>
+
+            <div class="tab-content" id="customerTabContent">
+                <!-- Personal Information Tab -->
+                <div class="tab-pane fade show active" id="personal" role="tabpanel" aria-labelledby="personal-tab">
+                    <div class="card card-container">
+                        <div class="card-body">
+                            <h5 class="card-title">Personal Details</h5>
+                            <div class="row mb-3">
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label for="id" class="required-field">ID</label>
+                                        <input type="text" id="id" name="id" class="form-control" readonly>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label for="leads_id">Lead</label>
+                                        <div class="input-group">
+                                            <select class="form-control" id="leads_id" name="leads_id">
+                                                <option value="">Select Lead</option>
+                                            </select>
+                                            <div class="input-group-append">
+                                                <button type="button" class="btn btn-success btn-add-lookup"
+                                                    data-table="leads">
+                                                    <i class="fas fa-plus"></i>
+                                                </button>
+                                                <button type="button" class="btn btn-danger btn-delete-lookup"
+                                                    data-table="leads">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label for="name" class="required-field">Name</label>
+                                        <input type="text" class="form-control" id="name" name="name" required>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row mb-3">
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label for="father">Father</label>
+                                        <input type="text" class="form-control" id="father" name="father">
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label for="casts_id">Cast</label>
+                                        <div class="input-group">
+                                            <select class="form-control" id="casts_id" name="casts_id">
+                                                <option value="">Select Cast</option>
+                                            </select>
+                                            <div class="input-group-append">
+                                                <button type="button" class="btn btn-success btn-add-lookup"
+                                                    data-table="casts">
+                                                    <i class="fas fa-plus"></i>
+                                                </button>
+                                                <button type="button" class="btn btn-danger btn-delete-lookup"
+                                                    data-table="casts">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label for="religions_id">Religion</label>
+                                        <div class="input-group">
+                                            <select class="form-control" id="religions_id" name="religions_id">
+                                                <option value="">Select Religion</option>
+                                            </select>
+                                            <div class="input-group-append">
+                                                <button type="button" class="btn btn-success btn-add-lookup"
+                                                    data-table="religions">
+                                                    <i class="fas fa-plus"></i>
+                                                </button>
+                                                <button type="button" class="btn btn-danger btn-delete-lookup"
+                                                    data-table="religions">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row mb-3">
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label for="marital_statuses_id">Marital Status</label>
+                                        <div class="input-group">
+                                            <select class="form-control" id="marital_statuses_id"
+                                                name="marital_statuses_id">
+                                                <option value="">Select Marital Status</option>
+                                            </select>
+                                            <div class="input-group-append">
+                                                <button type="button" class="btn btn-success btn-add-lookup"
+                                                    data-table="marital_statuses">
+                                                    <i class="fas fa-plus"></i>
+                                                </button>
+                                                <button type="button" class="btn btn-danger btn-delete-lookup"
+                                                    data-table="marital_statuses">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label for="dob">Date of Birth</label>
+                                        <input type="date" class="form-control" id="dob" name="dob">
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label for="cnic">CNIC</label>
+                                        <input type="text" class="form-control" id="cnic" name="cnic"
+                                            placeholder="00000-0000000-0">
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="row mb-3">
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label for="star">Zodiac Sign</label>
+                                        <select class="form-control" id="star" name="star">
+                                            <option value="">Select Zodiac Sign</option>
+                                            <option value="Aries" data-icon="fa-aries">Aries (March 21 – April 19)</option>
+                                            <option value="Taurus" data-icon="fa-taurus">Taurus (April 20 – May 20)</option>
+                                            <option value="Gemini" data-icon="fa-gemini">Gemini (May 21 – June 20)</option>
+                                            <option value="Cancer" data-icon="fa-cancer">Cancer (June 21 – July 22)</option>
+                                            <option value="Leo" data-icon="fa-leo">Leo (July 23 – August 22)</option>
+                                            <option value="Virgo" data-icon="fa-virgo">Virgo (August 23 – September 22)</option>
+                                            <option value="Libra" data-icon="fa-libra">Libra (September 23 – October 22)</option>
+                                            <option value="Scorpio" data-icon="fa-scorpio">Scorpio (October 23 – November 21)</option>
+                                            <option value="Sagittarius" data-icon="fa-sagittarius">Sagittarius (November 22 – December 21)</option>
+                                            <option value="Capricorn" data-icon="fa-capricorn">Capricorn (December 22 – January 19)</option>
+                                            <option value="Aquarius" data-icon="fa-aquarius">Aquarius (January 20 – February 18)</option>
+                                            <option value="Pisces" data-icon="fa-pisces">Pisces (February 19 – March 20)</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label for="bank_id">Bank</label>
+                                        <div id="bank-container">
+                                            <div class="input-group mb-2">
+                                                <select class="form-control" id="bank_id" name="bank_id">
+                                                    <option value="">Select Bank</option>
+                                                </select>
+                                                <div class="input-group-append">
+                                                    <button type="button" class="btn btn-success btn-add-lookup"
+                                                        data-table="bank">
+                                                        <i class="fas fa-plus"></i>
+                                                    </button>
+                                                    <button type="button" class="btn btn-danger btn-delete-lookup"
+                                                        data-table="bank">
+                                                        <i class="fas fa-trash"></i>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label for="account_iban">Account IBAN</label>
+                                        <div id="iban-container">
+                                            <div class="input-group mb-2">
+                                                <input type="text" class="form-control" id="account_iban" name="account_iban" placeholder="Primary IBAN">
+                                                <div class="input-group-append">
+                                                    <button type="button" class="btn btn-success btn-add-iban">
+                                                        <i class="fas fa-plus"></i>
+                                                    </button>
+                                                    <button type="button" class="btn btn-danger btn-remove-iban">
+                                                        <i class="fas fa-trash"></i>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Cell Numbers Row -->
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="cell" class="required-field">Cell Numbers</label>
+                                        <div id="cell-numbers-container">
+                                            <div class="input-group mb-2">
+                                                <input type="tel" class="form-control" name="cell" id="cell" required
+                                                    placeholder="Primary Cell">
+                                                <div class="input-group-append">
+                                                    <button type="button" class="btn btn-success btn-add-cell">
+                                                        <i class="fas fa-plus"></i>
+                                                    </button>
+                                                    <button type="button" class="btn btn-danger btn-remove-cell">
+                                                        <i class="fas fa-trash"></i>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="address">Address</label>
+                                        <textarea class="form-control" id="address" name="address" rows="2"></textarea>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Remarks Row -->
+                            <div class="row mb-3">
+                                <div class="col-md-12">
+                                    <div class="form-group remarks-container">
+                                        <label for="remarks">Remarks</label>
+                                        <textarea class="form-control remarks-textarea" id="remarks" name="remarks" rows="5"></textarea>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Area, City & Country -->
+                            <div class="row mb-3">
+                                <div class="col-md-4">
+                                    <div class="form-group area-city-country-container">
+                                        <label for="areas_id">Area</label>
+                                        <div class="input-group">
+                                            <select class="form-control" id="areas_id" name="areas_id">
+                                                <option value="">Select Area</option>
+                                            </select>
+                                            <div class="input-group-append">
+                                                <button type="button" class="btn btn-success btn-add-lookup"
+                                                    data-table="areas">
+                                                    <i class="fas fa-plus"></i>
+                                                </button>
+                                                <button type="button" class="btn btn-danger btn-delete-lookup"
+                                                    data-table="areas">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-4">
+                                    <div class="form-group area-city-country-container">
+                                        <label for="cities_id">City</label>
+                                        <div class="input-group">
+                                            <select class="form-control" id="cities_id" name="cities_id">
+                                                <option value="">Select City</option>
+                                            </select>
+                                            <div class="input-group-append">
+                                                <button type="button" class="btn btn-success btn-add-lookup"
+                                                    data-table="cities">
+                                                    <i class="fas fa-plus"></i>
+                                                </button>
+                                                <button type="button" class="btn btn-danger btn-delete-lookup"
+                                                    data-table="cities">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-4">
+                                    <div class="form-group area-city-country-container">
+                                        <label for="countries_id">Country</label>
+                                        <div class="input-group">
+                                            <select class="form-control" id="countries_id" name="countries_id">
+                                                <option value="">Select Country</option>
+                                            </select>
+                                            <div class="input-group-append">
+                                                <button type="button" class="btn btn-success btn-add-lookup"
+                                                    data-table="countries">
+                                                    <i class="fas fa-plus"></i>
+                                                </button>
+                                                <button type="button" class="btn btn-danger btn-delete-lookup"
+                                                    data-table="countries">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="image-sidebar">
+                                <h5 class="image-sidebar-title">Upload Images</h5>
+                
+                                <!-- Picture Upload -->
+                                <div class="image-upload-item">
+                                    <h5 class="image-upload-item-title">Picture</h5>
+                                    <div class="picture-upload-container">
+                                        <input type="file" id="photo" name="photo" accept="image/jpeg,image/jpg,image/png,image/webp,image/avif,image/gif,image/svg+xml,image/bmp" style="display: none;" capture="user">
+                                        <div class="picture-preview picture-preview-container"
+                                            ondblclick="document.getElementById('photo').click()">
+                                            <img id="preview-image" src="../../../assets/images/placeholder.png" alt="Preview"
+                                                class="standard-preview-image">
+                                            <div class="picture-overlay">Double click to attach</div>
+                                        </div>
+                                        <div class="picture-actions mt-1 text-center">
+                                            <button type="button" class="btn btn-success btn-sm"
+                                                onclick="document.getElementById('photo').click()">
+                                                <i class="fas fa-plus"></i>
+                                            </button>
+                                            <button type="button" class="btn btn-camera btn-sm" id="camera-photo">
+                                                <i class="fas fa-camera"></i>
+                                            </button>
+                                            <button type="button" class="btn btn-danger btn-sm" id="delete-picture">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </div>
+                                        <small class="form-text text-muted">Supported: JPG, JPEG, PNG, WEBP, AVIF, GIF, SVG, BMP</small>
+                                    </div>
+                                </div>
+                
+                                <!-- CNIC Front Upload -->
+                                <div class="image-upload-item">
+                                    <h5 class="image-upload-item-title">CNIC Front</h5>
+                                    <div class="picture-upload-container">
+                                        <input type="file" id="cnic_front" name="cnic_front" accept="image/jpeg,image/jpg,image/png,image/webp,image/avif,image/gif,image/svg+xml,image/bmp" style="display: none;" capture="user">
+                                        <div class="picture-preview picture-preview-container"
+                                            ondblclick="document.getElementById('cnic_front').click()">
+                                            <img id="cnic-front-preview" src="../../../assets/images/placeholder.png" alt="CNIC Front"
+                                                class="standard-preview-image">
+                                            <div class="picture-overlay">Double click to attach</div>
+                                        </div>
+                                        <div class="picture-actions mt-1 text-center">
+                                            <button type="button" class="btn btn-success btn-sm"
+                                                onclick="document.getElementById('cnic_front').click()">
+                                                <i class="fas fa-plus"></i>
+                                            </button>
+                                            <button type="button" class="btn btn-camera btn-sm" id="camera-cnic-front">
+                                                <i class="fas fa-camera"></i>
+                                            </button>
+                                            <button type="button" class="btn btn-danger btn-sm" id="delete-cnic-front">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </div>
+                                        <small class="form-text text-muted">Supported: JPG, JPEG, PNG, WEBP, AVIF, GIF, SVG, BMP</small>
+                                    </div>
+                                </div>
+                
+                                <!-- CNIC Back Upload -->
+                                <div class="image-upload-item">
+                                    <h5 class="image-upload-item-title">CNIC Back</h5>
+                                    <div class="picture-upload-container">
+                                        <input type="file" id="cnic_back" name="cnic_back" accept="image/jpeg,image/jpg,image/png,image/webp,image/avif,image/gif,image/svg+xml,image/bmp" style="display: none;" capture="user">
+                                        <div class="picture-preview picture-preview-container"
+                                            ondblclick="document.getElementById('cnic_back').click()">
+                                            <img id="cnic-back-preview" src="../../../assets/images/placeholder.png" alt="CNIC Back"
+                                                class="standard-preview-image">
+                                            <div class="picture-overlay">Double click to attach</div>
+                                        </div>
+                                        <div class="picture-actions mt-1 text-center">
+                                            <button type="button" class="btn btn-success btn-sm"
+                                                onclick="document.getElementById('cnic_back').click()">
+                                                <i class="fas fa-plus"></i>
+                                            </button>
+                                            <button type="button" class="btn btn-camera btn-sm" id="camera-cnic-back">
+                                                <i class="fas fa-camera"></i>
+                                            </button>
+                                            <button type="button" class="btn btn-danger btn-sm" id="delete-cnic-back">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </div>
+                                        <small class="form-text text-muted">Supported: JPG, JPEG, PNG, WEBP, AVIF, GIF, SVG, BMP</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div> <!-- card-body -->
+                    </div> <!-- card -->
+                </div> <!-- tab-pane -->
+
+                <!-- Contact/Reference Tab -->
+                <div class="tab-pane fade" id="contact" role="tabpanel" aria-labelledby="contact-tab">
+                    <div class="card card-container">
+                        <div class="card-body">
+                            <h5 class="card-title">Contact Information</h5>
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="email">Email</label>
+                                        <input type="email" class="form-control" id="email" name="email">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <h5 class="card-title mt-4">Reference Information</h5>
+                            <div class="row mb-3">
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label for="ref_name">Reference Name</label>
+                                        <input type="text" class="form-control" id="ref_name" name="ref_name">
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label for="ref_cnic">Reference CNIC</label>
+                                        <input type="text" class="form-control" id="ref_cnic" name="ref_cnic"
+                                            placeholder="00000-0000000-0">
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label for="ref_cell">Reference Cell</label>
+                                        <input type="tel" class="form-control" id="ref_cell" name="ref_cell">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row mb-3">
+                                <div class="col-md-12">
+                                    <div class="form-group">
+                                        <label for="ref_note">Reference Note</label>
+                                        <textarea class="form-control" id="ref_note" name="ref_note" rows="2"></textarea>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Work Information Tab -->
+                <div class="tab-pane fade" id="work" role="tabpanel" aria-labelledby="work-tab">
+                    <div class="row form-section-row">
+                        <div class="col-md-8">
+                            <div class="card">
+                                <div class="card-body">
+                                    <h5 class="card-title">Work Details</h5>
+                                    <div class="row mb-3">
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label for="company">Company</label>
+                                                <input type="text" class="form-control" id="company" name="company">
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label for="department">Department</label>
+                                                <input type="text" class="form-control" id="department" name="department">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row mb-3">
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label for="designation">Designation</label>
+                                                <input type="text" class="form-control" id="designation" name="designation">
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label for="occupation">Occupation</label>
+                                                <div class="input-group">
+                                                    <select class="form-control" id="occupations_id" name="occupations_id">
+                                                        <option value="">Select Occupation</option>
+                                                    </select>
+                                                    <div class="input-group-append">
+                                                        <button type="button" class="btn btn-success btn-add-lookup"
+                                                            data-table="occupations">
+                                                            <i class="fas fa-plus"></i>
+                                                        </button>
+                                                        <button type="button" class="btn btn-danger btn-delete-lookup"
+                                                            data-table="occupations">
+                                                            <i class="fas fa-trash"></i>
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row mb-3">
+                                        <div class="col-12">
+                                            <div class="form-group">
+                                                <label for="off_address">Off. Address</label>
+                                                <input type="text" class="form-control" id="off_address" name="off_address">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row mb-3">
+                                        <div class="col-12">
+                                            <div class="form-group">
+                                                <label for="work_note">Work Note</label>
+                                                <textarea class="form-control" id="work_note" name="work_note" rows="3"></textarea>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row mb-3">
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label for="web_page">Web Page</label>
+                                                <input type="url" class="form-control" id="web_page" name="web_page">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-12">
+                                            <div class="form-group">
+                                                <label for="work_remarks">Remarks</label>
+                                                <textarea class="form-control" id="work_remarks" name="work_remarks" rows="4"></textarea>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card">
+                                <div class="card-body">
+                                    <h5 class="card-title">Visiting Card</h5>
+                                    <div class="visiting-card-upload-container">
+                                        <input type="file" id="visiting_card" name="visiting_card" accept="image/jpeg,image/jpg,image/png,image/webp,image/avif,image/gif,image/svg+xml,image/bmp" style="display: none;" capture="user">
+                                        <div class="visiting-card-preview" id="visiting-card-container"
+                                            onclick="document.getElementById('visiting_card').click()">
+                                            <img id="visiting-card-preview-image" src="../../../assets/images/placeholder.png"
+                                                alt="Preview">
+                                            <div class="visiting-card-overlay" id="visiting-card-overlay">Double click to attach
+                                            </div>
+                                        </div>
+                                        <div class="visiting-card-actions mt-2">
+                                            <button type="button" class="btn btn-success btn-sm"
+                                                onclick="document.getElementById('visiting_card').click()">
+                                                <i class="fas fa-plus"></i>
+                                            </button>
+                                            <button type="button" class="btn btn-camera btn-sm" id="camera-visiting-card">
+                                                <i class="fas fa-camera"></i>
+                                            </button>
+                                            <button type="button" class="btn btn-danger btn-sm" id="delete-visiting-card">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </div>
+                                        <small class="form-text text-muted">Supported: JPG, JPEG, PNG, WEBP, AVIF, GIF, SVG, BMP</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div> <!-- tab-content -->
+
+            <div class="form-buttons">
+                <button type="reset" class="btn-reset" id="resetButton">
+                    <i class="fas fa-undo"></i>
+                    Reset
+                </button>
+                <button type="submit" class="btn-save" id="saveButton">
+                    <i class="fas fa-save"></i>
+                    Save
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Add Modal Template -->
+    <div class="modal fade" id="addLookupModal" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Add New Item</h5>
+                    <button type="button" class="close" data-dismiss="modal">
+                        <span>&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form id="lookupForm" onsubmit="return false;">
+                        <input type="hidden" id="lookupTable" name="table">
+                        <input type="hidden" id="lookupParentId" name="parent_id">
+                        <div class="form-group">
+                            <label for="lookupName">Name</label>
+                            <input type="text" class="form-control" id="lookupName" name="name" required>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" id="saveLookup">Save</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div class="modal fade" id="deleteConfirmModal" tabindex="-1" role="dialog">
+        <div class="modal-dialog modal-confirm" role="document">
+            <div class="modal-content">
+                <div class="modal-header delete">
+                    <div class="icon-box">
+                        <i class="fas fa-exclamation-triangle"></i>
+                    </div>
+                    <h4 class="modal-title">Are you sure?</h4>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <p>Do you really want to delete this item? This process cannot be undone.</p>
+                    <div id="cascadeDeleteOption" class="form-check mt-3" style="display: none;">
+                        <input class="form-check-input" type="checkbox" id="cascadeDelete">
+                        <label class="form-check-label" for="cascadeDelete">
+                            Also delete all related items
+                        </label>
+                        <small class="form-text text-muted" id="cascadeDeleteHelp"></small>
+                    </div>
+                    <input type="hidden" id="deleteTable">
+                    <input type="hidden" id="deleteId">
+                </div>
+                <div class="modal-footer justify-content-center">
+                    <button type="button" class="btn btn-secondary btn-cancel" data-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-danger btn-confirm-delete" id="confirmDelete">Delete</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="../../../assets/js/common/navigation.js"></script>
+    <script src="../../../assets/js/components/navbar.js"></script>
+    <script src="../../../assets/js/entry/customerList/edit.js"></script>
+    
+    <script>
+        // Hide loader when page is fully loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            // Short timeout to ensure everything is loaded
+            setTimeout(function() {
+                document.getElementById('loader-overlay').style.display = 'none';
+            }, 800);
+            
+            // Initialize connection status
+            updateOnlineStatus();
+        });
+        
+        // Check if form is modified before unloading
+        function isFormModified() {
+            // Get the form elements
+            const form = document.getElementById('customerForm');
+            const formElements = form.elements;
+            
+            // Check if any element has a value
+            for (let i = 0; i < formElements.length; i++) {
+                const element = formElements[i];
+                
+                // Skip the ID field and buttons
+                if (element.id === 'id' || element.type === 'button' || element.type === 'submit' || element.type === 'reset') {
+                    continue;
+                }
+                
+                // Check if the element has a value
+                if ((element.type === 'text' || element.type === 'textarea' || element.type === 'select-one') && element.value) {
+                    return true;
+                }
+                
+                // Check file inputs
+                if (element.type === 'file' && element.files.length > 0) {
+                    return true;
+                }
+            }
+            
+            // Check if any of the image previews have been changed
+            const imageIds = ['preview-image', 'cnic-front-preview', 'cnic-back-preview', 'visiting-card-preview-image'];
+            for (const id of imageIds) {
+                const img = document.getElementById(id);
+                if (img && !img.src.includes('placeholder.png')) {
+                    return true;
+                }
+            }
+            
+            return false;
+        }
+        
+        // Handle offline form submission
+        $('#customerForm').on('submit', function(e) {
+            if (!navigator.onLine) {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                // Save form data to localStorage
+                const formData = new FormData(this);
+                const formDataObj = {};
+                
+                for (const [key, value] of formData.entries()) {
+                    // Skip file inputs for simplicity (they can't be easily stored in localStorage)
+                    if (typeof value !== 'object') {
+                        formDataObj[key] = value;
+                    }
+                }
+                
+                localStorage.setItem('pendingFormData', JSON.stringify(formDataObj));
+                
+                Swal.fire({
+                    title: 'Offline Mode',
+                    text: 'Your form data has been saved locally and will be submitted when you reconnect to the internet.',
+                    icon: 'info'
+                });
+                
+                return false;
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,709 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>View Customer</title>
+
+    <!-- Add cache control metadata -->
+    <meta http-equiv="Cache-Control" content="max-age=86400">
+    <meta http-equiv="Expires" content="86400">
+    
+    <!-- CSS Libraries -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.32/dist/sweetalert2.min.css">
+    
+    <!-- JavaScript Libraries -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.32/dist/sweetalert2.all.min.js"></script>
+    
+    <!-- Service Worker Registration -->
+    <script>
+        // Register the service worker
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', function() {
+                navigator.serviceWorker.register('/realestate/assets/js/sw.js')
+                    .then(function(registration) {
+                        console.log('ServiceWorker registration successful with scope: ', registration.scope);
+                    })
+                    .catch(function(error) {
+                        console.log('ServiceWorker registration failed: ', error);
+                    });
+            });
+        }
+        
+        // Check for app updates
+        let refreshing = false;
+        
+        // Listen for controlling service worker changing
+        navigator.serviceWorker.addEventListener('controllerchange', function() {
+            if (refreshing) return;
+            refreshing = true;
+            window.location.reload();
+        });
+        
+        // Detect online/offline status
+        window.addEventListener('online', updateOnlineStatus);
+        window.addEventListener('offline', updateOnlineStatus);
+        
+        function updateOnlineStatus() {
+            const statusElement = document.getElementById('connection-status');
+            if (!statusElement) return;
+            
+            if (navigator.onLine) {
+                statusElement.textContent = 'Online';
+                statusElement.className = 'badge badge-success';
+            } else {
+                statusElement.textContent = 'Offline';
+                statusElement.className = 'badge badge-danger';
+            }
+        }
+    </script>
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="../../../assets/css/dashboard/dashboard.css">
+    <link rel="stylesheet" href="../../../assets/css/entry/customer/customer.css">
+    
+    <style>
+        /* View-only form styles */
+        .form-control[disabled], .form-control[readonly] {
+            background-color: #f8f9fa;
+            opacity: 1;
+            cursor: default;
+        }
+        
+        /* Loader overlay */
+        .loader-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255,255,255,0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            flex-direction: column;
+        }
+        
+        .loader {
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid #3498db;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin-bottom: 15px;
+        }
+        
+        .loader-message {
+            font-size: 16px;
+            color: #333;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* Connection status */
+        .connection-status-container {
+            display: inline-flex;
+            align-items: center;
+            margin-left: 15px;
+        }
+        
+        .connection-status-label {
+            margin-right: 5px;
+            font-size: 12px;
+            color: #6c757d;
+        }
+        
+        #connection-status {
+            font-size: 12px;
+            padding: 3px 6px;
+        }
+        
+        /* Fix for Back to List button hover text color */
+        .btn-reset:hover {
+            color: #fff !important;
+            text-decoration: none !important;
+        }
+        .btn-save:hover {
+            color: #fff !important;
+            text-decoration: none !important;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Loader overlay -->
+    <div class="loader-overlay" id="loader-overlay">
+        <div class="loader"></div>
+        <div class="loader-message">Loading customer data...</div>
+    </div>
+
+    <div id="navbar-container"></div>
+
+    <div class="container mt-4">
+        <div class="header-container">
+            <h5>View Customer</h5>
+            <div class="button-group">
+                <a href="../../../controllers/reports/customerList/index.php" class="btn-dashboard">
+                    <i class="fas fa-list"></i>
+                    Customer List
+                </a>
+                <div class="date-field">
+                    <label for="entry_date">Date:</label>
+                    <input type="date" id="entry_date" name="entry_date" disabled>
+                    <div class="connection-status-container">
+                        <span class="connection-status-label">Status:</span>
+                        <span id="connection-status" class="badge badge-success">Online</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <form id="customerForm" class="customer-form">
+            <ul class="nav nav-tabs" id="customerTabs" role="tablist">
+                <li class="nav-item">
+                    <a class="nav-link active" id="personal-tab" data-toggle="tab" href="#personal" role="tab"
+                        aria-controls="personal" aria-selected="true">
+                        Personal Information
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" id="contact-tab" data-toggle="tab" href="#contact" role="tab"
+                        aria-controls="contact" aria-selected="false">
+                        Contact/Reference
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" id="work-tab" data-toggle="tab" href="#work" role="tab" aria-controls="work"
+                        aria-selected="false">
+                        Work Information
+                    </a>
+                </li>
+            </ul>
+
+            <div class="tab-content" id="customerTabContent">
+                <!-- Personal Information Tab -->
+                <div class="tab-pane fade show active" id="personal" role="tabpanel" aria-labelledby="personal-tab">
+                    <div class="card card-container">
+                        <div class="card-body">
+                            <h5 class="card-title">Personal Details</h5>
+                            <div class="row mb-3">
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label for="id" class="required-field">ID</label>
+                                        <input type="text" id="id" name="id" class="form-control" readonly>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label for="leads_id">Lead</label>
+                                        <div class="input-group">
+                                            <select class="form-control" id="leads_id" name="leads_id" disabled>
+                                                <option value="">Select Lead</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label for="name" class="required-field">Name</label>
+                                        <input type="text" class="form-control" id="name" name="name" readonly>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row mb-3">
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label for="father">Father</label>
+                                        <input type="text" class="form-control" id="father" name="father" readonly>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label for="casts_id">Cast</label>
+                                        <div class="input-group">
+                                            <select class="form-control" id="casts_id" name="casts_id" disabled>
+                                                <option value="">Select Cast</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label for="religions_id">Religion</label>
+                                        <div class="input-group">
+                                            <select class="form-control" id="religions_id" name="religions_id" disabled>
+                                                <option value="">Select Religion</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row mb-3">
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label for="marital_statuses_id">Marital Status</label>
+                                        <div class="input-group">
+                                            <select class="form-control" id="marital_statuses_id"
+                                                name="marital_statuses_id" disabled>
+                                                <option value="">Select Marital Status</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label for="dob">Date of Birth</label>
+                                        <input type="date" class="form-control" id="dob" name="dob" readonly>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label for="cnic">CNIC</label>
+                                        <input type="text" class="form-control" id="cnic" name="cnic" readonly>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="row mb-3">
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label for="star">Zodiac Sign</label>
+                                        <select class="form-control" id="star" name="star" disabled>
+                                            <option value="">Select Zodiac Sign</option>
+                                            <option value="Aries">Aries (March 21 – April 19)</option>
+                                            <option value="Taurus">Taurus (April 20 – May 20)</option>
+                                            <option value="Gemini">Gemini (May 21 – June 20)</option>
+                                            <option value="Cancer">Cancer (June 21 – July 22)</option>
+                                            <option value="Leo">Leo (July 23 – August 22)</option>
+                                            <option value="Virgo">Virgo (August 23 – September 22)</option>
+                                            <option value="Libra">Libra (September 23 – October 22)</option>
+                                            <option value="Scorpio">Scorpio (October 23 – November 21)</option>
+                                            <option value="Sagittarius">Sagittarius (November 22 – December 21)</option>
+                                            <option value="Capricorn">Capricorn (December 22 – January 19)</option>
+                                            <option value="Aquarius">Aquarius (January 20 – February 18)</option>
+                                            <option value="Pisces">Pisces (February 19 – March 20)</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label for="bank_id">Bank</label>
+                                        <div id="bank-container">
+                                            <div class="input-group mb-2">
+                                                <select class="form-control" id="bank_id" name="bank_id" disabled>
+                                                    <option value="">Select Bank</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label for="account_iban">Account IBAN</label>
+                                        <div id="iban-container">
+                                            <div class="input-group mb-2">
+                                                <input type="text" class="form-control" id="account_iban" name="account_iban" readonly>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Cell Numbers Row -->
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="cell" class="required-field">Cell Numbers</label>
+                                        <div id="cell-numbers-container">
+                                            <div class="input-group mb-2">
+                                                <input type="tel" class="form-control" name="cell" id="cell" readonly>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="address">Address</label>
+                                        <textarea class="form-control" id="address" name="address" rows="2" readonly></textarea>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Remarks Row -->
+                            <div class="row mb-3">
+                                <div class="col-md-12">
+                                    <div class="form-group remarks-container">
+                                        <label for="remarks">Remarks</label>
+                                        <textarea class="form-control remarks-textarea" id="remarks" name="remarks" rows="5" readonly></textarea>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Area, City & Country -->
+                            <div class="row mb-3">
+                                <div class="col-md-4">
+                                    <div class="form-group area-city-country-container">
+                                        <label for="areas_id">Area</label>
+                                        <div class="input-group">
+                                            <select class="form-control" id="areas_id" name="areas_id" disabled>
+                                                <option value="">Select Area</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-4">
+                                    <div class="form-group area-city-country-container">
+                                        <label for="cities_id">City</label>
+                                        <div class="input-group">
+                                            <select class="form-control" id="cities_id" name="cities_id" disabled>
+                                                <option value="">Select City</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-4">
+                                    <div class="form-group area-city-country-container">
+                                        <label for="countries_id">Country</label>
+                                        <div class="input-group">
+                                            <select class="form-control" id="countries_id" name="countries_id" disabled>
+                                                <option value="">Select Country</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="image-sidebar">
+                                <h5 class="image-sidebar-title">Customer Images</h5>
+                
+                                <!-- Picture Display -->
+                                <div class="image-upload-item">
+                                    <h5 class="image-upload-item-title">Picture</h5>
+                                    <div class="picture-upload-container">
+                                        <div class="picture-preview picture-preview-container">
+                                            <img id="preview-image" src="../../../assets/images/placeholder.png" alt="Preview"
+                                                class="standard-preview-image">
+                                        </div>
+                                    </div>
+                                </div>
+                
+                                <!-- CNIC Front Display -->
+                                <div class="image-upload-item">
+                                    <h5 class="image-upload-item-title">CNIC Front</h5>
+                                    <div class="picture-upload-container">
+                                        <div class="picture-preview picture-preview-container">
+                                            <img id="cnic-front-preview" src="../../../assets/images/placeholder.png" alt="CNIC Front"
+                                                class="standard-preview-image">
+                                        </div>
+                                    </div>
+                                </div>
+                
+                                <!-- CNIC Back Display -->
+                                <div class="image-upload-item">
+                                    <h5 class="image-upload-item-title">CNIC Back</h5>
+                                    <div class="picture-upload-container">
+                                        <div class="picture-preview picture-preview-container">
+                                            <img id="cnic-back-preview" src="../../../assets/images/placeholder.png" alt="CNIC Back"
+                                                class="standard-preview-image">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div> <!-- card-body -->
+                    </div> <!-- card -->
+                </div> <!-- tab-pane -->
+
+                <!-- Contact/Reference Tab -->
+                <div class="tab-pane fade" id="contact" role="tabpanel" aria-labelledby="contact-tab">
+                    <div class="card card-container">
+                        <div class="card-body">
+                            <h5 class="card-title">Contact Information</h5>
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="email">Email</label>
+                                        <input type="email" class="form-control" id="email" name="email" readonly>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <h5 class="card-title mt-4">Reference Information</h5>
+                            <div class="row mb-3">
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label for="ref_name">Reference Name</label>
+                                        <input type="text" class="form-control" id="ref_name" name="ref_name" readonly>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label for="ref_cnic">Reference CNIC</label>
+                                        <input type="text" class="form-control" id="ref_cnic" name="ref_cnic" readonly>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label for="ref_cell">Reference Cell</label>
+                                        <input type="tel" class="form-control" id="ref_cell" name="ref_cell" readonly>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row mb-3">
+                                <div class="col-md-12">
+                                    <div class="form-group">
+                                        <label for="ref_note">Reference Note</label>
+                                        <textarea class="form-control" id="ref_note" name="ref_note" rows="2" readonly></textarea>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Work Information Tab -->
+                <div class="tab-pane fade" id="work" role="tabpanel" aria-labelledby="work-tab">
+                    <div class="row form-section-row">
+                        <div class="col-md-8">
+                            <div class="card">
+                                <div class="card-body">
+                                    <h5 class="card-title">Work Details</h5>
+                                    <div class="row mb-3">
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label for="company">Company</label>
+                                                <input type="text" class="form-control" id="company" name="company" readonly>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label for="department">Department</label>
+                                                <input type="text" class="form-control" id="department" name="department" readonly>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row mb-3">
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label for="designation">Designation</label>
+                                                <input type="text" class="form-control" id="designation" name="designation" readonly>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label for="occupation">Occupation</label>
+                                                <div class="input-group">
+                                                    <select class="form-control" id="occupations_id" name="occupations_id" disabled>
+                                                        <option value="">Select Occupation</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row mb-3">
+                                        <div class="col-12">
+                                            <div class="form-group">
+                                                <label for="off_address">Off. Address</label>
+                                                <input type="text" class="form-control" id="off_address" name="off_address" readonly>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row mb-3">
+                                        <div class="col-12">
+                                            <div class="form-group">
+                                                <label for="work_note">Work Note</label>
+                                                <textarea class="form-control" id="work_note" name="work_note" rows="3" readonly></textarea>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row mb-3">
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label for="web_page">Web Page</label>
+                                                <input type="url" class="form-control" id="web_page" name="web_page" readonly>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-12">
+                                            <div class="form-group">
+                                                <label for="work_remarks">Remarks</label>
+                                                <textarea class="form-control" id="work_remarks" name="work_remarks" rows="4" readonly></textarea>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card">
+                                <div class="card-body">
+                                    <h5 class="card-title">Visiting Card</h5>
+                                    <div class="visiting-card-upload-container">
+                                        <div class="visiting-card-preview" id="visiting-card-container">
+                                            <img id="visiting-card-preview-image" src="../../../assets/images/placeholder.png"
+                                                alt="Preview">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div> <!-- tab-content -->
+
+            <div class="form-buttons">
+                <a href="index.php" class="btn-reset" id="backButton">
+                    <i class="fas fa-arrow-left"></i>
+                    Back to List
+                </a>
+                <a href="edit.php" class="btn-save" id="editButton">
+                    <i class="fas fa-edit"></i>
+                    Edit
+                </a>
+            </div>
+        </form>
+    </div>
+    
+    <script src="../../../assets/js/common/navigation.js"></script>
+    <script src="../../../assets/js/components/navbar.js"></script>
+    <script src="../../../assets/js/reports/customerList/view.js"></script>
+    
+    <script>
+        // Script to populate form with customer data
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('DOM loaded for view.html');
+            
+            // Hide loader when page is fully loaded
+            setTimeout(function() {
+                document.getElementById('loader-overlay').style.display = 'none';
+            }, 800);
+            
+            // Initialize connection status
+            updateOnlineStatus();
+            
+            // Check if customer data is available
+            if (typeof customerData !== 'undefined' && customerData.customer) {
+                console.log('Customer data available:', customerData.customer);
+                populateCustomerData(customerData.customer);
+                
+                // Update Edit button href with customer ID
+                const editButton = document.getElementById('editButton');
+                if (editButton && customerData.customer.id) {
+                    editButton.href = `edit.php?id=${customerData.customer.id}`;
+                }
+            } else {
+                console.error('No customer data available');
+                Swal.fire({
+                    title: 'Error',
+                    text: 'Customer data not found',
+                    icon: 'error',
+                    confirmButtonText: 'Go Back to List',
+                }).then(() => {
+                    window.location.href = 'index.php';
+                });
+            }
+        });
+        
+        // Function to populate the form with customer data
+        function populateCustomerData(customer) {
+            // Basic fields - iterate through all properties
+            for (const [key, value] of Object.entries(customer)) {
+                const element = document.getElementById(key);
+                if (element && value !== null) {
+                    if (element.tagName === 'SELECT') {
+                        // For select elements, find and select the option with matching value
+                        for (let i = 0; i < element.options.length; i++) {
+                            if (element.options[i].value == value) {
+                                element.selectedIndex = i;
+                                break;
+                            }
+                        }
+                    } else if (element.type === 'checkbox') {
+                        element.checked = value === '1' || value === true;
+                    } else if (element.type === 'file') {
+                        // Skip file inputs
+                    } else {
+                        element.value = value;
+                    }
+                }
+            }
+            
+            // Handle images
+            if (customer.photo_url) {
+                document.getElementById('preview-image').src = customer.photo_url;
+            }
+            
+            if (customer.cnic_front_url) {
+                document.getElementById('cnic-front-preview').src = customer.cnic_front_url;
+            }
+            
+            if (customer.cnic_back_url) {
+                document.getElementById('cnic-back-preview').src = customer.cnic_back_url;
+            }
+            
+            if (customer.visiting_card_url) {
+                document.getElementById('visiting-card-preview-image').src = customer.visiting_card_url;
+            }
+            
+            // Handle date fields
+            const dateFields = ['dob', 'entry_date'];
+            dateFields.forEach(field => {
+                const element = document.getElementById(field);
+                if (element && customer[field]) {
+                    // Make sure date is in YYYY-MM-DD format
+                    if (customer[field].includes('/')) {
+                        const parts = customer[field].split('/');
+                        element.value = `${parts[2]}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}`;
+                    } else {
+                        element.value = customer[field];
+                    }
+                }
+            });
+            
+            // Additional cell numbers
+            if (customer.additional_cell_numbers && customer.additional_cell_numbers.length > 0) {
+                const container = document.getElementById('cell-numbers-container');
+                container.innerHTML = ''; // Clear container
+                
+                customer.additional_cell_numbers.forEach((phone, index) => {
+                    const div = document.createElement('div');
+                    div.className = 'mb-2';
+                    div.innerHTML = `<input type="tel" class="form-control" value="${phone}" readonly>`;
+                    container.appendChild(div);
+                });
+            }
+            
+            // Additional IBANs
+            if (customer.additional_ibans && customer.additional_ibans.length > 0) {
+                const container = document.getElementById('iban-container');
+                container.innerHTML = ''; // Clear container
+                
+                customer.additional_ibans.forEach((iban, index) => {
+                    const div = document.createElement('div');
+                    div.className = 'mb-2';
+                    div.innerHTML = `<input type="text" class="form-control" value="${iban}" readonly>`;
+                    container.appendChild(div);
+                });
+            }
+        }
+    </script>
+</body>
+</html>
