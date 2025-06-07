@@ -1,0 +1,1103 @@
+/* Minimal essential styles only */
+.btn-add-lookup {
+    background-color: #28a745;
+    color: white;
+    border: none;
+    margin-left: 2px;
+}
+
+.btn-config-lookup {
+    background-color: #002cf0;
+    color: white;
+    border: none;
+    margin-left: 2px;
+}
+
+.btn-delete-lookup {
+    background-color: #dc3545;
+    color: white;
+    border: none;
+    margin-left: 2px;
+}
+
+/* Improved container styles with responsive padding */
+.container {
+    width: 100%;
+    margin-left: auto;
+    margin-right: 220px; /* Move container to the right instead of using padding */
+    padding-left: 15px;
+    padding-right: 15px;
+    position: relative;
+    transition: margin 0.3s ease;
+}
+
+/* Adjust container size based on screen width */
+@media (min-width: 1400px) {
+    .container {
+        max-width: 1320px;
+        margin-right: 240px; /* More space on larger screens */
+    }
+}
+
+@media (min-width: 1200px) and (max-width: 1399px) {
+    .container {
+        max-width: 1140px;
+        margin-right: 220px;
+    }
+}
+
+@media (min-width: 992px) and (max-width: 1199px) {
+    .container {
+        max-width: 960px;
+        margin-right: 200px;
+    }
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+    .container {
+        max-width: 720px;
+        margin-right: auto; /* Reset margin as sidebar moves below */
+    }
+}
+
+@media (min-width: 576px) and (max-width: 767px) {
+    .container {
+        max-width: 540px;
+        padding-right: 15px;
+    }
+}
+
+@media (max-width: 575px) {
+    .container {
+        padding-right: 15px;
+        padding-left: 15px;
+    }
+}
+
+.btn-add-lookup:hover,
+.btn-delete-lookup:hover {
+    opacity: 0.9;
+    color: white;
+}
+
+/* Dropdown error styling */
+.select2-container--default .select2-selection--single {
+    border: 1px solid #ced4da;
+    height: calc(1.5em + 0.75rem + 2px);
+    padding: 0.375rem 0.75rem;
+}
+
+.select2-container--default .select2-selection--single .select2-selection__rendered {
+    line-height: 1.5;
+    color: #495057;
+}
+
+.select2-container--default .select2-selection--single .select2-selection__arrow {
+    height: 100%;
+}
+
+.select2-container--default.select2-container--open .select2-selection--single {
+    border-color: #80bdff;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+/* Error message styling */
+.error-message {
+    color: #dc3545;
+    font-size: 0.875rem;
+    margin-top: 0.25rem;
+    display: block;
+}
+
+/* Input group styling */
+.input-group>.select2-container {
+    flex: 1 1 auto;
+    width: auto !important;
+}
+
+.input-group>.input-group-append {
+    margin-left: 0;
+}
+
+.input-group>.input-group-append>.btn {
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+    z-index: 1;
+}
+
+/* Header section styling */
+.header-container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem 0;
+    margin-bottom: 1.5rem;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.header-container h5 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #2d3748;
+    margin: 0;
+}
+
+.button-group {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+}
+
+.btn-dashboard {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    background-color: #4299e1;
+    color: white;
+    border-radius: 0.375rem;
+    text-decoration: none;
+    font-size: 0.875rem;
+    font-weight: 500;
+    transition: background-color 0.2s;
+}
+
+.btn-dashboard:hover {
+    background-color: #3182ce;
+    color: white;
+    text-decoration: none;
+}
+
+.btn-dashboard i {
+    font-size: 1rem;
+}
+
+.date-field {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.date-field label {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #4a5568;
+    margin: 0;
+}
+
+.date-field input[type="date"] {
+    padding: 0.5rem;
+    border: 1px solid #e2e8f0;
+    border-radius: 0.375rem;
+    font-size: 0.875rem;
+    color: #2d3748;
+    background-color: white;
+    min-width: 150px;
+}
+
+.date-field input[type="date"]:focus {
+    outline: none;
+    border-color: #4299e1;
+    box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.15);
+}
+
+/* Navigation Tabs Styling */
+.nav-tabs {
+    border-bottom: 2px solid #e2e8f0;
+    margin-bottom: 1.5rem;
+    display: flex;
+    gap: 0.5rem;
+}
+
+.nav-tabs .nav-item {
+    margin-bottom: -2px;
+}
+
+.nav-tabs .nav-link {
+    border: none;
+    border-bottom: 2px solid transparent;
+    color: #718096;
+    padding: 0.75rem 1.5rem;
+    font-weight: 500;
+    transition: all 0.2s ease-in-out;
+    position: relative;
+    background: transparent;
+}
+
+.nav-tabs .nav-link:hover {
+    color: #4299e1;
+    border-color: transparent;
+}
+
+.nav-tabs .nav-link.active {
+    color: #4299e1;
+    background: transparent;
+    border-bottom: 2px solid #4299e1;
+}
+
+.nav-tabs .nav-link::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background-color: #4299e1;
+    transform: scaleX(0);
+    transition: transform 0.2s ease-in-out;
+}
+
+.nav-tabs .nav-link:hover::after {
+    transform: scaleX(0.5);
+}
+
+.nav-tabs .nav-link.active::after {
+    transform: scaleX(1);
+}
+
+/* Tab Content Animation */
+.tab-content {
+    position: relative;
+}
+
+.tab-pane {
+    transition: opacity 0.15s linear;
+    display: none;
+}
+
+.tab-pane.fade {
+    opacity: 0;
+}
+
+.tab-pane.fade.show {
+    opacity: 1;
+    display: block;
+}
+
+/* Square Image Upload Box Styling */
+.image-upload-container {
+    width: 200px;
+    margin-bottom: 20px;
+}
+
+.image-upload {
+    width: 200px;
+    height: 200px;
+    border: 2px dashed #ccc;
+    border-radius: 4px;
+    position: relative;
+    overflow: hidden;
+    background-color: #f8f9fa;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+
+.image-upload:hover {
+    border-color: #4299e1;
+    background-color: #ebf8ff;
+}
+
+.image-upload input[type="file"] {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    opacity: 0;
+    cursor: pointer;
+}
+
+.image-upload-text {
+    color: #718096;
+    font-size: 0.875rem;
+    text-align: center;
+    padding: 10px;
+}
+
+.image-preview {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
+.image-upload.has-preview .image-upload-text {
+    display: none;
+}
+
+/* Target the upload section container */
+.form-section>.row {
+    margin-top: 20px;
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: nowrap;
+    z-index: 1000;
+}
+
+/* Each upload box */
+.form-section .col-md-4 {
+    width: 100% !important;
+    max-width: 100%;
+}
+
+/* Form Buttons Styling */
+.form-buttons {
+    position: sticky;
+    bottom: 0;
+    background: linear-gradient(to bottom, rgba(255, 255, 255, 0.9) 0%, rgba(255, 255, 255, 1) 100%);
+    padding: 1rem 0;
+    margin-top: 2rem;
+    box-shadow: 0 -4px 6px -1px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+    display: flex;
+    justify-content: flex-end;
+    padding-right: 100px; /* Added padding to move buttons to the left */
+    gap: 1rem;
+}
+
+.btn-save {
+    background: #2563eb;
+    color: white;
+    border: none;
+    padding: 0.75rem 2rem;
+    font-size: 1rem;
+    font-weight: 500;
+    border-radius: 0.5rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+    box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.2);
+}
+
+.btn-save:hover {
+    background: #1d4ed8;
+    transform: translateY(-1px);
+    box-shadow: 0 6px 8px -1px rgba(37, 99, 235, 0.3);
+}
+
+.btn-save:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 4px -1px rgba(37, 99, 235, 0.2);
+}
+
+.btn-save:disabled {
+    background: #93c5fd;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+.btn-save i {
+    font-size: 1.125rem;
+    transition: transform 0.2s ease;
+}
+
+.btn-save:hover i {
+    transform: scale(1.1);
+}
+
+/* Reset button styling */
+.btn-reset {
+    background: #64748b;
+    color: white;
+    border: none;
+    padding: 0.75rem 2rem;
+    font-size: 1rem;
+    font-weight: 500;
+    border-radius: 0.5rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+    box-shadow: 0 4px 6px -1px rgba(100, 116, 139, 0.2);
+    margin-right: 1rem;
+}
+
+.btn-reset:hover {
+    background: #475569;
+    transform: translateY(-1px);
+    box-shadow: 0 6px 8px -1px rgba(100, 116, 139, 0.3);
+}
+
+.btn-reset:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 4px -1px rgba(100, 116, 139, 0.2);
+}
+
+.btn-reset i {
+    font-size: 1.125rem;
+    transition: transform 0.2s ease;
+}
+
+.btn-reset:hover i {
+    transform: rotate(-15deg);
+}
+
+/* Loading state */
+.btn-save.loading {
+    position: relative;
+    color: transparent;
+}
+
+.btn-save.loading::after {
+    content: '';
+    position: absolute;
+    width: 1.25rem;
+    height: 1.25rem;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    border: 2px solid white;
+    border-radius: 50%;
+    border-top-color: transparent;
+    animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: translate(-50%, -50%) rotate(360deg);
+    }
+}
+
+/* Image Control Buttons */
+.image-controls {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+}
+
+.btn-image-control {
+    padding: 0.5rem;
+    border: none;
+    border-radius: 0.25rem;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease-in-out;
+    color: white;
+    width: 2.5rem;
+    height: 2.5rem;
+}
+
+.btn-image-add {
+    background-color: #10b981;
+}
+
+.btn-image-add:hover {
+    background-color: #059669;
+}
+
+.btn-image-delete {
+    background-color: #ef4444;
+}
+
+.btn-image-delete:hover {
+    background-color: #dc2626;
+}
+
+.btn-image-control i {
+    font-size: 1rem;
+}
+
+/* Field Control Buttons */
+.field-controls {
+    display: none;
+}
+
+.btn-field-control {
+    padding: 0.5rem;
+    border: none;
+    border-radius: 0.25rem;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease-in-out;
+    color: white;
+    width: 2rem;
+    height: 2.3rem;
+}
+
+.btn-field-add {
+    background-color: #10b981;
+}
+
+.btn-field-add:hover {
+    background-color: #059669;
+}
+
+.btn-field-delete {
+    background-color: #ef4444;
+}
+
+.btn-field-delete:hover {
+    background-color: #dc2626;
+}
+
+.input-group {
+    display: flex;
+    align-items: stretch;
+}
+
+.input-group select,
+.input-group input {
+    border-radius: 0.375rem 0 0 0.375rem !important;
+}
+
+.input-group .field-controls {
+    margin-left: -1px;
+}
+
+.input-group .field-controls button:first-child {
+    border-radius: 0;
+}
+
+.input-group .field-controls button:last-child {
+    border-radius: 0 0.375rem 0.375rem 0;
+}
+
+/* Common styles for all dropdown fields */
+.input-group {
+    margin-bottom: 1rem;
+}
+
+.input-group-append .btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 38px;
+    height: 38px;
+    padding: 0;
+    border-radius: 0;
+}
+
+.input-group-append .btn:first-child {
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+}
+
+.input-group-append .btn:last-child {
+    border-top-right-radius: 4px;
+    border-bottom-right-radius: 4px;
+}
+
+.input-group-append .btn:hover {
+    transform: scale(1.05);
+    transition: transform 0.2s ease;
+}
+
+.form-control {
+    border-right: 0;
+}
+
+.input-group-append {
+    margin-left: 0;
+}
+
+/* Custom Alert Styles */
+.custom-alert {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    max-width: 400px;
+    padding: 15px 20px;
+    border-radius: 4px;
+    color: white;
+    z-index: 9999;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.custom-alert.success {
+    background-color: #10b981;
+    border-left: 4px solid #059669;
+}
+
+.custom-alert.error {
+    background-color: #ef4444;
+    border-left: 4px solid #dc2626;
+}
+
+.custom-alert .alert-content {
+    flex: 1;
+    margin-right: 15px;
+}
+
+.custom-alert .close-alert {
+    background: transparent;
+    border: none;
+    color: white;
+    font-size: 20px;
+    cursor: pointer;
+    padding: 0;
+    opacity: 0.8;
+    transition: opacity 0.2s;
+}
+
+.custom-alert .close-alert:hover {
+    opacity: 1;
+}
+
+/* Picture Upload Styles */
+.picture-upload-container {
+    text-align: center;
+}
+
+.picture-preview {
+    border: 2px dashed #ccc;
+    padding: 10px;
+    cursor: pointer;
+    display: inline-block;
+    position: relative;
+}
+
+.picture-preview:hover .picture-overlay {
+    opacity: 1;
+}
+
+.picture-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+.picture-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+}
+
+/* Camera button styles */
+.btn-camera {
+    background-color: #007bff;
+    color: white;
+    border: none;
+}
+
+.btn-camera:hover {
+    background-color: #0069d9;
+}
+
+#preview-image {
+    object-fit: cover;
+}
+
+/* Visiting Card Upload Styles */
+.visiting-card-upload-container {
+    text-align: center;
+    margin: 20px auto;
+    max-width: 200px;
+}
+
+.visiting-card-preview {
+    width: 200px;
+    height: 200px;
+    border: 2px dashed #ccc;
+    border-radius: 8px;
+    padding: 10px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    background-color: #f8f9fa;
+    transition: all 0.3s ease;
+    overflow: hidden;
+}
+
+.visiting-card-preview:hover {
+    border-color: #007bff;
+}
+
+.visiting-card-preview img {
+    max-width: 100%;
+    max-height: 100%;
+    width: auto;
+    height: auto;
+    object-fit: contain;
+}
+
+.visiting-card-overlay {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: #666;
+    font-size: 14px;
+    text-align: center;
+    background-color: rgba(255, 255, 255, 0.8);
+    padding: 5px 10px;
+    border-radius: 4px;
+    pointer-events: none;
+}
+
+.visiting-card-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    margin-top: 10px;
+}
+
+.visiting-card-actions button {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.2s ease;
+}
+
+.visiting-card-actions button:hover {
+    transform: scale(1.1);
+}
+
+.visiting-card-actions .btn-success {
+    background-color: #28a745;
+    border-color: #28a745;
+}
+
+.visiting-card-actions .btn-danger {
+    background-color: #dc3545;
+    border-color: #dc3545;
+}
+
+/* Image Sidebar Styles */
+.image-sidebar {
+    position: absolute;
+    top: 20px;
+    right: -200px; /* Adjusted to fit within the container */
+    width: 180px;
+    max-height: 95vh;
+    overflow-y: auto;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    padding: 15px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    z-index: 100;
+    transition: all 0.3s ease;
+}
+
+.image-upload-item {
+    margin-bottom: 15px;
+}
+
+.image-upload-item:last-child {
+    margin-bottom: 0;
+}
+
+.image-upload-item .picture-preview {
+    width: 130px;
+    height: 130px;
+}
+
+.image-sidebar-title {
+    text-align: center;
+    margin-bottom: 15px;
+    font-size: 16px;
+    color: #444;
+}
+
+.image-upload-item-title {
+    text-align: center;
+    margin-bottom: 1px;
+    font-size: 14px;
+    font-weight: bold;
+}
+
+.picture-preview-container {
+    width: 130px;
+    height: 130px;
+    margin: 0 auto;
+    border: 1px dashed #ccc;
+}
+
+.standard-preview-image {
+    max-width: 100%;
+    max-height: 100%;
+    width: auto;
+    height: auto;
+    object-fit: contain;
+}
+
+/* Card Styles */
+.card-container {
+    max-width: 1100px;
+    margin: 0 auto;
+}
+
+.form-section-row {
+    margin-top: 20px;
+}
+
+.remarks-container {
+    margin-left: 10px;
+}
+
+.remarks-textarea {
+    width: 70%;
+}
+
+.area-city-country-container {
+    margin-left: 10px;
+}
+
+/* Modal Styles */
+.modal-confirm .icon-box {
+    color: #f15e5e;
+    width: 80px;
+    height: 80px;
+    margin: 0 auto;
+    border-radius: 50%;
+    z-index: 9;
+    background: #fff0f0;
+    padding: 15px;
+    text-align: center;
+    box-shadow: 0px 2px 2px rgba(0, 0, 0, 0.1);
+}
+
+.modal-confirm .icon-box i {
+    font-size: 46px;
+    display: inline-block;
+    margin-top: 13px;
+    color: #f15e5e;
+}
+
+.modal-header.delete {
+    border-bottom: none;
+    position: relative;
+    text-align: center;
+    margin: -20px -20px 0;
+    border-radius: 5px 5px 0 0;
+    padding: 35px;
+}
+
+/* Custom styles for required field marker in customer.css */
+.required-field::after {
+    content: "*";
+    color: #dc3545;
+    margin-left: 4px;
+    font-weight: bold;
+}
+
+/* Responsive Design - Updated */
+@media (max-width: 1400px) {
+    #personal {
+        padding-right: 20px; /* Reduced padding */
+    }
+}
+
+@media (max-width: 992px) {
+    /* Reset container padding */
+    .container {
+        padding-right: 15px;
+        padding-left: 15px;
+    }
+
+    /* Adjust form layout */
+    .row>[class*="col-"] {
+        margin-bottom: 15px;
+    }
+
+    /* Header container adjustments */
+    .header-container {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .button-group {
+        margin-top: 15px;
+        width: 100%;
+        justify-content: space-between;
+    }
+
+    /* Make tabs scrollable on smaller screens */
+    .nav-tabs {
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        white-space: nowrap;
+        padding-bottom: 5px;
+    }
+
+    .nav-tabs .nav-link {
+        padding: 0.75rem 1rem;
+    }
+
+    /* Make image sidebar static instead of fixed */
+    .image-sidebar {
+        position: static;
+        width: 100%;
+        max-height: none;
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-around;
+        margin-top: 20px;
+        padding: 15px;
+    }
+
+    .image-upload-item {
+        margin-bottom: 20px;
+        margin-right: 10px; /* Add some spacing between items */
+    }
+    
+    /* Reset form buttons padding */
+    .form-buttons {
+        padding-right: 15px;
+    }
+}
+
+@media (max-width: 768px) {
+    /* Further adjustments for mobile */
+    .btn-dashboard {
+        padding: 0.5rem 0.75rem;
+        font-size: 0.8rem;
+    }
+
+    .date-field {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 5px;
+    }
+
+    .date-field input[type="date"] {
+        width: 100%;
+    }
+
+    /* Stack form buttons */
+    .form-buttons {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .btn-reset,
+    .btn-save {
+        width: 100%;
+    }
+    
+    .btn-reset {
+        margin-right: 0;
+        order: 2;
+    }
+    
+    .btn-save {
+        order: 1;
+    }
+    
+    /* Adjust card layouts */
+    .card {
+        overflow: hidden;
+    }
+
+    /* Adjust input groups for mobile */
+    .input-group {
+        flex-wrap: wrap;
+    }
+
+    .input-group>.form-control {
+        border-radius: 0.375rem !important;
+        border-right: 1px solid #ced4da;
+        margin-bottom: 5px;
+    }
+
+    .input-group-append {
+        display: flex;
+        width: 100%;
+    }
+
+    .input-group-append .btn {
+        flex: 1;
+        border-radius: 0.375rem !important;
+        margin: 0 2px;
+    }
+
+    /* Adjust visiting card */
+    .visiting-card-preview {
+        width: 150px;
+        height: 150px;
+    }
+
+    /* Adjust tabs and tab content */
+    .tab-pane .card-body {
+        padding: 15px 10px;
+    }
+}
+
+@media (max-width: 576px) {
+    /* Smallest screen adjustments */
+    .header-container h5 {
+        font-size: 1.25rem;
+    }
+
+    .button-group {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+
+    .btn-dashboard {
+        width: 100%;
+        justify-content: center;
+    }
+
+    /* Make image sidebar items smaller */
+    .image-upload-item .picture-preview {
+        width: 110px;
+        height: 110px;
+    }
+
+    /* Adjust form groups */
+    .form-group {
+        margin-bottom: 10px;
+    }
+
+    .form-group label {
+        font-size: 0.85rem;
+    }
+
+    /* Adjust modal for small screens */
+    .modal-dialog {
+        margin: 0.5rem;
+    }
+
+    .modal-body {
+        padding: 15px;
+    }
+
+    /* Adjust card title */
+    .card-title {
+        font-size: 1.1rem;
+        margin-bottom: 15px;
+    }
+
+    /* Create some breathing room */
+    .row {
+        margin-left: -5px;
+        margin-right: -5px;
+    }
+
+    .row>[class*="col-"] {
+        padding-left: 5px;
+        padding-right: 5px;
+    }
+}
